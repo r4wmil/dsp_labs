@@ -29,10 +29,10 @@ plot(t1, fi1, 'r--');
 plot(ti2, fi2, 'r--');
 stem(t, U, 'b--');
 title('Initial');
-xlabel('t, ms');
+xlabel('t, sample');
 ylabel('U, V');
 
-% --- FFT (Fast Fourier Transform) ---
+% --- 2. FFT (Fast Fourier Transform) ---
 
 S = fft(U);
 
@@ -49,3 +49,35 @@ title('Phase');
 xlabel('k');
 ylabel('arg[S(k)]');
 grid on;
+
+% --- 3. Spectre width ---
+
+E0 = sum(U.^2);
+
+function [Ur, Nmax] = signal_reconstruct(U, S, E0, threshold)
+    Nmax = 0;
+    while true
+        Sf = S; % Spectere filtered
+        Sf(Nmax+2 : end-Nmax) = 0;
+        Ur = ifft(Sf, 'symmetric'); % Signal recovered
+        Er = sum(Ur.^2);
+        if Er / E0 >= threshold
+           break
+        end
+        Nmax = Nmax + 1;
+    end
+end
+
+[Ur90, Nmax90] = signal_reconstruct(U, S, E0, 0.9);
+[Ur99, Nmax99] = signal_reconstruct(U, S, E0, 0.99);
+
+figure;
+hold on;
+grid on;
+stem(U, 'b');
+stem(Ur90, 'r', 'LineStyle', 'none', 'Marker', 'x');
+stem(Ur99, 'r', 'LineStyle', 'none', 'Marker', 'o');
+legend('Initial', 'Er / E0 >= 90%', 'Er / E0 >= 99%');
+legend show;
+xlabel('t, sample');
+ylabel('U, V');
