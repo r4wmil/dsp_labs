@@ -72,12 +72,18 @@ end
 [Ur99, Nmax99] = signal_reconstruct(U, S, E0, 0.99);
 
 figure;
-hold on;
 grid on;
+subplot(2, 1, 1);
 stem(U, 'b');
-stem(Ur90, 'r', 'LineStyle', 'none', 'Marker', 'x');
+legend('Initial');
+subplot(2, 1, 2);
+hold on;
+stem(Ur90, 'r', 'Marker', 'x');
 stem(Ur99, 'r', 'LineStyle', 'none', 'Marker', 'o');
-legend('Initial', 'Er / E0 >= 90%', 'Er / E0 >= 99%');
+hold off;
+legend('Er / E0 >= 90%', 'Er / E0 >= 99%');
 legend show;
 xlabel('t, sample');
 ylabel('U, V');
+
+% --- 4.
