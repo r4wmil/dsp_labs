@@ -86,4 +86,22 @@ legend show;
 xlabel('t, sample');
 ylabel('U, V');
 
-% --- 4.
+% --- 4. Padding with zeroes ---
+
+Up = [U, zeros(1, length(U))];
+Sp = fft(Up);
+
+figure
+subplot(2, 1, 1);
+stem(abs(Sp));
+title('Module (zero padded)');
+xlabel('k');
+ylabel('|Sp(k)|');
+grid on;
+
+subplot(2, 1, 2);
+stem(angle(Sp));
+title('Phase (zero padded)');
+xlabel('k');
+ylabel('arg[Sp(k)]');
+grid on;
