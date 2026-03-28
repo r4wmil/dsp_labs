@@ -105,3 +105,43 @@ title('Phase (zero padded)');
 xlabel('k');
 ylabel('arg[Sp(k)]');
 grid on;
+
+% --- 5-6. Direct DFT vs FFT
+
+Nv = [64, 128, 256, 512, 1024, 2048, 4096, 8192];
+
+K = 10;
+t_dft = zeros(size(Nv));
+for idx = 1:length(Nv)
+    N = Nv(idx);
+    x_padded = [U, zeros(1, N - length(U))];
+    D = dftmtx(N);
+    tic
+    for k = 1:K
+        y = x_padded * D;
+    end
+    t_dft(idx) = toc;
+    fprintf('N = %d, toc = %.3f с\n', N, t_dft(idx));
+end
+T_dft_us = (t_dft / K) * 1e6;
+
+K = 1000;
+t_fft = zeros(size(Nv));
+for idx = 1:length(Nv)
+    N = Nv(idx);
+    tic
+    for k = 1:K
+        y = fft(U, N);
+    end
+    t_fft(idx) = toc;
+    fprintf('N = %d, время = %.3f с\n', N, t_fft(idx));
+end
+
+T_fft_us = (t_fft / K) * 1e6;
+
+figure;
+loglog(Nv, T_dft_us, 'b-o');
+hold on;
+loglog(Nv, T_fft_us, 'r-s');
+grid on;
+legend("DFT, us", "FFT, us");
