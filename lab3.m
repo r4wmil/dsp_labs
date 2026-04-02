@@ -1,3 +1,4 @@
+
 % --- DATA (v. 9) ---
 
 U1 = 4; U2 = 7; U3 = 10; U4 = 0;
@@ -52,9 +53,9 @@ grid on;
 
 % --- 3. Spectre width ---
 
-E0 = sum(U.^2);
+E0 = sum(U.^2)
 
-function [Ur, Nmax] = signal_reconstruct(U, S, E0, threshold)
+function [Ur, Nmax] = signal_reconstruct(S, E0, threshold)
     Nmax = 0;
     while true
         Sf = S; % Spectere filtered
@@ -62,14 +63,15 @@ function [Ur, Nmax] = signal_reconstruct(U, S, E0, threshold)
         Ur = ifft(Sf, 'symmetric'); % Signal recovered
         Er = sum(Ur.^2);
         if Er / E0 >= threshold
+           Er
            break
         end
         Nmax = Nmax + 1;
     end
 end
 
-[Ur90, Nmax90] = signal_reconstruct(U, S, E0, 0.9);
-[Ur99, Nmax99] = signal_reconstruct(U, S, E0, 0.99);
+[Ur90, Nmax90] = signal_reconstruct(S, E0, 0.9);
+[Ur99, Nmax99] = signal_reconstruct(S, E0, 0.99);
 
 figure;
 grid on;
@@ -110,38 +112,67 @@ grid on;
 
 Nv = [64, 128, 256, 512, 1024, 2048, 4096, 8192];
 
-K = 10;
+K_dft = 60;
 t_dft = zeros(size(Nv));
 for idx = 1:length(Nv)
     N = Nv(idx);
     x_padded = [U, zeros(1, N - length(U))];
     D = dftmtx(N);
     tic
-    for k = 1:K
+    for k = 1:K_dft
         y = x_padded * D;
     end
     t_dft(idx) = toc;
-    fprintf('N = %d, toc = %.3f с\n', N, t_dft(idx));
+    fprintf('DFT N = %d, %.4f %.3f с\n', N, t_dft(idx), t_dft(idx)/K_dft*10^6);
 end
-T_dft_us = (t_dft / K) * 1e6;
+T_dft_us = (t_dft / K_dft) * 1e6;
 
-K = 1000;
+K_fft = 100000;
 t_fft = zeros(size(Nv));
 for idx = 1:length(Nv)
     N = Nv(idx);
     tic
-    for k = 1:K
+    for k = 1:K_fft
         y = fft(U, N);
     end
     t_fft(idx) = toc;
-    fprintf('N = %d, время = %.3f с\n', N, t_fft(idx));
+    fprintf('FFT N = %d, %.4f %.3f с\n', N, t_fft(idx), t_fft(idx)/K_fft*10^6);
 end
+T_fft_us = (t_fft / K_fft) * 1e6;
 
-T_fft_us = (t_fft / K) * 1e6;
+% Approximated
+k1 = T_dft_us(end) / (Nv(end)^2);
+k2 = T_fft_us(end) / (Nv(end)*log2(Nv(end)));
+
+N_fit = Nv;
+t_fit_dft = k1 * N_fit.^2;
+t_fit_fft = k2 * N_fit .* log2(N_fit);
+
+fprintf('k1 = %.3e с\n', k1);
+fprintf('k2 = %.3e с\n', k2);
 
 figure;
-loglog(Nv, T_dft_us, 'b-o');
+loglog(Nv, T_dft_us, 'b-o', 'LineWidth', 1.5);
 hold on;
-loglog(Nv, T_fft_us, 'r-s');
+loglog(Nv, t_fit_dft, 'b--', 'LineWidth', 1);
 grid on;
-legend("DFT, us", "FFT, us");
+xlabel('N');
+ylabel('Время, мкс');
+
+figure;
+loglog(Nv, T_fft_us, 'r-s', 'LineWidth', 1.5);
+hold on;
+loglog(Nv, t_fit_fft, 'r--', 'LineWidth', 1);
+grid on;
+xlabel('N');
+ylabel('Время, мкс');
+
+figure;
+loglog(Nv, T_dft_us, 'b-o', 'LineWidth', 1.5);
+hold on;
+loglog(Nv, t_fit_dft, 'b--', 'LineWidth', 1);
+loglog(Nv, T_fft_us, 'r-s', 'LineWidth', 1.5);
+loglog(Nv, t_fit_fft, 'r--', 'LineWidth', 1);
+grid on;
+xlabel('N');
+ylabel('Время, мкс');
