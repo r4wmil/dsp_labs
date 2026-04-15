@@ -1,4 +1,4 @@
-s% --- DATA (v. 9) ---
+% --- DATA (v. 9) ---
 
 U1 = 4; U2 = 7; U3 = 10; U4 = 0;
 T1 = 4; T2 = 7;
@@ -17,10 +17,12 @@ fi2 = k2 * ti2 + b2;
 
 t1 = 0 : Ta : T1 - Ta;
 t2 = T1 : Ta : T2;
-t = [t1 t2];
+t3 = T2 + Ta : Ta : T2 * 2
+t = [t1 t2 t3];
 f1 = k1 * t1 + b1;
 f2 = k2 * t2 + b2;
-U = [f1 f2];
+f3 = 0 * t3;
+U = [f1 f2 f3];
 
 figure;
 hold on;
@@ -77,8 +79,8 @@ figure
 plot(states');
 grid on;
 title('Internal signals');
-xlabel('t, samples');
-ylabel('U, V');
+xlabel('t');
+ylabel('U');
 maxtr = max(max(abs(states)))
 
 fvtool(b, a);
@@ -91,3 +93,31 @@ mp = abs(p)
 pr = angle(r)
 pp = angle(p)
 k
+
+% --- h(t) check ---
+
+function h = impulse_response(k)
+    % Аналитическая импульсная характеристика фильтра
+    % k - целое число (дискретное время)
+    
+    A1 = 2 * 0.0796;
+    r1 = 0.9237;
+    theta1 = 0.4800;
+    phi1 = 2.1154;
+    
+    A2 = 2 * 0.2052;
+    r2 = 0.8171;
+    theta2 = 0.2019;
+    phi2 = -1.3700;
+    
+    K = 0.00148;
+    
+    % Импульсная характеристика
+    h = A1 * r1.^k .* cos(k * theta1 + phi1) + ...
+         A2 * r2.^k .* cos(k * theta2 + phi2) + ...
+         K * (k == 0);
+end
+
+k = 0:T2*4;
+h_vals = impulse_response(k);
+stem(k, h_vals);
