@@ -112,7 +112,8 @@ grid on;
 
 Nv = [64, 128, 256, 512, 1024, 2048, 4096, 8192];
 
-K_dft = 60;
+% DFT
+K_dft = 1200;
 t_dft = zeros(size(Nv));
 for idx = 1:length(Nv)
     N = Nv(idx);
@@ -123,11 +124,10 @@ for idx = 1:length(Nv)
         y = x_padded * D;
     end
     t_dft(idx) = toc;
-    fprintf('DFT N = %d, %.4f %.3f с\n', N, t_dft(idx), t_dft(idx)/K_dft*10^6);
 end
-T_dft_us = (t_dft / K_dft) * 1e6;
 
-K_fft = 100000;
+% FFT
+K_fft = 190000;
 t_fft = zeros(size(Nv));
 for idx = 1:length(Nv)
     N = Nv(idx);
@@ -136,43 +136,45 @@ for idx = 1:length(Nv)
         y = fft(U, N);
     end
     t_fft(idx) = toc;
-    fprintf('FFT N = %d, %.4f %.3f с\n', N, t_fft(idx), t_fft(idx)/K_fft*10^6);
 end
-T_fft_us = (t_fft / K_fft) * 1e6;
 
-% Approximated
-k1 = T_dft_us(end) / (Nv(end)^2);
-k2 = T_fft_us(end) / (Nv(end)*log2(Nv(end)));
+T_dft = t_dft / K_dft;
+T_fft = t_fft / K_fft;
 
-N_fit = Nv;
-t_fit_dft = k1 * N_fit.^2;
-t_fit_fft = k2 * N_fit .* log2(N_fit);
+k1 = sum(T_dft .* (Nv.^2)) / sum((Nv.^2).^2)
+k2 = sum(T_fft .* (Nv .* log2(Nv))) / sum((Nv .* log2(Nv)).^2)
 
-fprintf('k1 = %.3e с\n', k1);
-fprintf('k2 = %.3e с\n', k2);
+to1 = log2(T_dft);
+to2 = log2(T_fft);
+N1 = log2(Nv);
+tt1 = log2(k1 * (Nv.^2));
+tt2 = log2(k2 * Nv .* log2(Nv));
 
-figure;
-loglog(Nv, T_dft_us, 'b-o', 'LineWidth', 1.5);
-hold on;
-loglog(Nv, t_fit_dft, 'b--', 'LineWidth', 1);
-grid on;
-xlabel('N');
-ylabel('Время, мкс');
+figure
+hold on
+grid on
+plot(N1, to1, 'r-');
+plot(N1, tt1, 'b--');
+title('Затраты времени на однократное вычисление (прямое ДПФ)');
+xlabel('log2(N)');
+ylabel('log2(t), с');
 
-figure;
-loglog(Nv, T_fft_us, 'r-s', 'LineWidth', 1.5);
-hold on;
-loglog(Nv, t_fit_fft, 'r--', 'LineWidth', 1);
-grid on;
-xlabel('N');
-ylabel('Время, мкс');
+figure
+hold on
+grid on
+plot(N1, to2, 'r-');
+plot(N1, tt2, 'b--');
+title('Затраты времени на однократное вычисление (БПФ)');
+xlabel('log2(N)');
+ylabel('log2(t), с');
 
-figure;
-loglog(Nv, T_dft_us, 'b-o', 'LineWidth', 1.5);
-hold on;
-loglog(Nv, t_fit_dft, 'b--', 'LineWidth', 1);
-loglog(Nv, T_fft_us, 'r-s', 'LineWidth', 1.5);
-loglog(Nv, t_fit_fft, 'r--', 'LineWidth', 1);
-grid on;
-xlabel('N');
-ylabel('Время, мкс');
+figure
+hold on
+grid on
+plot(N1, to1, 'r-');
+plot(N1, tt1, 'r--');
+plot(N1, to2, 'b-');
+plot(N1, tt2, 'b--');
+title('Затраты времени на однократное вычисление');
+xlabel('log2(N)');
+ylabel('log2(t), с');
