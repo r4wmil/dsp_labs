@@ -73,6 +73,11 @@ end
 [Ur90, Nmax90] = signal_reconstruct(S, E0, 0.9);
 [Ur99, Nmax99] = signal_reconstruct(S, E0, 0.99);
 
+N = length(Ur99)
+delta_f = (Nmax99 - 1) * (4000 / N)
+
+return;
+
 figure;
 grid on;
 subplot(2, 1, 1);
