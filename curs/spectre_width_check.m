@@ -5,15 +5,28 @@ function U = spectre(T1, w)
     U = ( (a1 + (a2 - a1)*exp(-1j*w*T1) - a2*exp(-1j*w*5)) ./ (1j*w).^2 ) + ...
         ( (3 - 2*exp(-1j*w*T1) - 9*exp(-1j*w*5)) ./ (1j*w) );
 
+    absU = abs(U);
+    [maxU, ~] = max(absU);
+    threshold = 0.1 * maxU;
+
+    w_pos = w(w > 0);
+    absU_pos = absU(w > 0);
+    idx = find(absU_pos >= threshold, 1, 'last');
+    w_width = w_pos(idx);
+
     figure;
-    plot(w, abs(U), 'LineWidth', 1.5);
-    xlabel('\omega (rad/s)');
-    ylabel('|U(\omega)|');
-    title(['Magnitude Spectrum |U(\omega)| for T_1 = ', num2str(T1)]);
+    plot(w, absU, 'LineWidth', 1.5); hold on;
+    line([-w_width, w_width], [threshold, threshold], 'Color', 'r', 'LineStyle', '--');
+    plot(w_width, threshold, 'ro', 'MarkerFaceColor', 'r');
+    plot(-w_width, threshold, 'ro', 'MarkerFaceColor', 'r');
+    
+    xlabel('\omega (rad/s)'); ylabel('|U(\omega)|');
+    title(['Magnitude Spectrum for T_1 = ', num2str(T1), ' (Width \approx ', num2str(w_width, '%.2f'), ')']);
     grid on;
+    legend('|U(\omega)|', '10% Width', 'Location', 'northeast');
 end
 
-w = linspace(-20, 20, 5000);
+w = linspace(-20, 20, 10000);
 w = w(w ~= 0);
 spectre(1, w);
 spectre(2, w);
