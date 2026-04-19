@@ -5,6 +5,16 @@ function U = spectre(T1, w)
     U = ( (a1 + (a2 - a1)*exp(-1j*w*T1) - a2*exp(-1j*w*5)) ./ (1j*w).^2 ) + ...
         ( (3 - 2*exp(-1j*w*T1) - 9*exp(-1j*w*5)) ./ (1j*w) );
 
+    ReU = (a1 + (a2 - a1)*cos(w*T1) - a2*cos(5*w))./(w.^2) + ...
+          (-2*sin(w*T1) - 9*sin(5*w))./w;
+    
+    ImU = ((a2 - a1)*sin(w*T1) - a2*sin(5*w))./(w.^2) + ...
+          (-3 + 2*cos(w*T1) + 9*cos(5*w))./w;
+
+    Uc = ReU + 1j*ImU;
+
+
+    absUc = abs(Uc);
     absU = abs(U);
     [maxU, ~] = max(absU);
     threshold = 0.1 * maxU;
@@ -16,6 +26,7 @@ function U = spectre(T1, w)
 
     figure;
     plot(w, absU, 'LineWidth', 1.5); hold on;
+    plot(w, absUc, 'LineWidth', 1.5); hold on;
     line([-w_width, w_width], [threshold, threshold], 'Color', 'r', 'LineStyle', '--');
     plot(w_width, threshold, 'ro', 'MarkerFaceColor', 'r');
     plot(-w_width, threshold, 'ro', 'MarkerFaceColor', 'r');
