@@ -7,13 +7,18 @@ function U = spectre(T1, w)
         ( (3 - 2*exp(-1j*w*T1) - 9*exp(-1j*w*5)) ./ (1j*w) );
     absU = abs(U);
 
+    U1 = (2 - 0.5*exp(-1j*w*1) - 1.5*exp(-1j*w*5)) ./ ((1j*w).^2) + (3 - 2*exp(-1j*w*1) - 9*exp(-1j*w*5)) ./ (1j*w);
+
     % --- Reconstructed from real & imaginary ---
     ReU = -(a1 + (a2 - a1)*cos(w*T1) - a2*cos(5*w))./(w.^2) - ...
           (-2*sin(w*T1) - 9*sin(5*w))./w;
     ImU = ((a2 - a1)*sin(w*T1) - a2*sin(5*w))./(w.^2) + ...
           (-3 + 2*cos(w*T1) + 9*cos(5*w))./w;
-    Uc = ReU + 1j*ImU;
-    absUc = abs(Uc);
+    Uc = ReU + 1i*ImU;
+
+    %ReU1 = (2 + 0.5.*cos(w) + 1.5.*cos(5.*w))./w.^2 + (2.*sin(w) + 9.*sin(5.*w))./w;
+    %ImU1 = (-0.5.*sin(w) - 1.5.*sin(5.*w))./w.^2 + (-3 + 2.*cos(w) + 9.*cos(5.*w))./w;
+    %U1c = ReU1 + i*ImU1;
 
     % --- Width (10% criteria) ---
     [maxU, ~] = max(absU);
@@ -42,7 +47,7 @@ function U = spectre(T1, w)
     figure;
     subplot(2,1,1);
     plot(w, absU, 'LineWidth', 1.5); hold on;
-    plot(w, absUc, 'LineWidth', 1.5, 'LineStyle', '--'); hold on;
+    plot(w, abs(Uc), 'LineWidth', 1.5, 'LineStyle', '--'); hold on;
     line([-w_width, w_width], [threshold, threshold], 'Color', '#f55', 'LineStyle', '--');
     plot(w_width, threshold, 'ro', 'MarkerFaceColor', '#f55', 'HandleVisibility', 'off');
     plot(-w_width, threshold, 'ro', 'MarkerFaceColor', '#f55', 'HandleVisibility', 'off');
@@ -51,7 +56,8 @@ function U = spectre(T1, w)
     hold on;
     stem(freqs(idx_plot), abs(X_fft(idx_plot)), 'Marker', 'none', 'Color', '#aaa');
     title(['Magnitude Spectrum for T_1 = ', num2str(T1), ' (Width \approx ', num2str(w_width, '%.2f'), ')']);
-    legend('Analytical', 'Reconstructed (Re + i*Im)', '10% criteria', 'FFT check');
+    plot(w, abs(U1), 'LineWidth', 1.5, 'LineStyle', ':'); hold on;
+    legend('Analytical', 'Reconstructed (Re + i*Im)', '10% criteria', 'FFT check', 'T1=1us');
     
     subplot(2,1,2);
     plot(w, angle(U), 'LineWidth', 1.5); hold on;
@@ -60,9 +66,10 @@ function U = spectre(T1, w)
     stem(freqs(idx_plot), angle(X_fft(idx_plot)), 'Marker', 'none', 'Color', '#aaa');
     grid on;
     legend('Analytical', 'Reconstructed (Re + i*Im)', 'FFT check');
+    plot(w, angle(U1), 'LineWidth', 1.5, 'LineStyle', ':'); hold on;
 end
 
-w = linspace(-20, 20, 10000);
+w = linspace(-8, 8, 10000);
 w = w(w ~= 0);
 spectre(1, w);
 spectre(2, w);
