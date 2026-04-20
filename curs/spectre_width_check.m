@@ -5,7 +5,7 @@ function U = spectre(T1, w)
     U = ( (a1 + (a2 - a1)*exp(-1j*w*T1) - a2*exp(-1j*w*5)) ./ (1j*w).^2 ) + ...
         ( (3 - 2*exp(-1j*w*T1) - 9*exp(-1j*w*5)) ./ (1j*w) );
 
-    ReU = (a1 + (a2 - a1)*cos(w*T1) - a2*cos(5*w))./(w.^2) + ...
+    ReU = -(a1 + (a2 - a1)*cos(w*T1) - a2*cos(5*w))./(w.^2) - ...
           (-2*sin(w*T1) - 9*sin(5*w))./w;
     
     ImU = ((a2 - a1)*sin(w*T1) - a2*sin(5*w))./(w.^2) + ...
@@ -25,6 +25,7 @@ function U = spectre(T1, w)
     w_width = w_pos(idx);
 
     figure;
+    subplot(2,1,1);
     plot(w, absU, 'LineWidth', 1.5); hold on;
     plot(w, absUc, 'LineWidth', 1.5, 'LineStyle', '--'); hold on;
     line([-w_width, w_width], [threshold, threshold], 'Color', 'r', 'LineStyle', '--');
@@ -58,6 +59,12 @@ function U = spectre(T1, w)
     hold on;
     stem(freqs(idx_plot), abs(X_fft(idx_plot)), 'Marker', 'none');
     legend('|U(\omega)| Analytical', 'Re+Im check', '10% Width', 'FFT Spectrum');
+
+    subplot(2,1,2);
+    plot(w, angle(U), 'LineWidth', 1.5); hold on;
+    plot(w, angle(Uc), 'LineWidth', 1.5, 'LineStyle', '--'); hold on;
+    grid on;
+    stem(freqs(idx_plot), angle(X_fft(idx_plot)), 'Marker', 'none');
 end
 
 w = linspace(-20, 20, 10000);
