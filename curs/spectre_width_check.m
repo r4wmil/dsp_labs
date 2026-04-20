@@ -26,15 +26,38 @@ function U = spectre(T1, w)
 
     figure;
     plot(w, absU, 'LineWidth', 1.5); hold on;
-    plot(w, absUc, 'LineWidth', 1.5); hold on;
+    plot(w, absUc, 'LineWidth', 1.5, 'LineStyle', '--'); hold on;
     line([-w_width, w_width], [threshold, threshold], 'Color', 'r', 'LineStyle', '--');
-    plot(w_width, threshold, 'ro', 'MarkerFaceColor', 'r');
-    plot(-w_width, threshold, 'ro', 'MarkerFaceColor', 'r');
+    plot(w_width, threshold, 'ro', 'MarkerFaceColor', 'r', 'HandleVisibility', 'off');
+    plot(-w_width, threshold, 'ro', 'MarkerFaceColor', 'r', 'HandleVisibility', 'off');
     
     xlabel('\omega (rad/s)'); ylabel('|U(\omega)|');
     title(['Magnitude Spectrum for T_1 = ', num2str(T1), ' (Width \approx ', num2str(w_width, '%.2f'), ')']);
     grid on;
     legend('|U(\omega)|', '10% Width', 'Location', 'northeast');
+
+    % --- FFT Part ---
+    fs = 180;                 % Частота дискретизации
+    dt = 1/fs;                % Шаг по времени
+    t = 0:dt:5;               % Временной вектор до 5с
+    
+    % Определение сигнала: наклон от 3 до 5, затем от 3 до 9
+    x = (3 + (2/T1)*t) .* (t < T1) + ...
+        (3 + (6/(5-T1))*(t-T1)) .* (t >= T1);
+
+    N_fft = 2^12;             % Zero-padding для точности
+    X_fft = fft(x, N_fft) * dt; % Нормировка FFT для соответствия аналитике
+    
+    % Вектор частот в рад/с
+    freqs = (0:N_fft-1) * (fs/N_fft) * 2 * pi;
+    
+    % Ограничение для визуализации (только положительные частоты)
+    idx_plot = freqs <= max(w);
+    
+    % Наложение на существующий график
+    hold on;
+    stem(freqs(idx_plot), abs(X_fft(idx_plot)), 'Marker', 'none');
+    legend('|U(\omega)| Analytical', 'Re+Im check', '10% Width', 'FFT Spectrum');
 end
 
 w = linspace(-20, 20, 10000);
