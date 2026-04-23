@@ -16,6 +16,10 @@ function U = spectre(T1, w)
           (-3 + 2*cos(w*T1) + 9*cos(5*w))./w;
     Uc = ReU + 1i*ImU;
 
+    if T1 == 1
+        Ks = 1 * (ReU - 1i*ImU) .* exp(-1i * w * 5);
+    end
+
     %ReU1 = (2 + 0.5.*cos(w) + 1.5.*cos(5.*w))./w.^2 + (2.*sin(w) + 9.*sin(5.*w))./w;
     %ImU1 = (-0.5.*sin(w) - 1.5.*sin(5.*w))./w.^2 + (-3 + 2.*cos(w) + 9.*cos(5.*w))./w;
     %U1c = ReU1 + i*ImU1;
@@ -57,7 +61,10 @@ function U = spectre(T1, w)
     stem(freqs(idx_plot), abs(X_fft(idx_plot)), 'Marker', 'none', 'Color', '#aaa');
     title(['Magnitude Spectrum for T_1 = ', num2str(T1), ' (Width \approx ', num2str(w_width, '%.2f'), ')']);
     plot(w, abs(U1), 'LineWidth', 1.5, 'LineStyle', ':'); hold on;
-    legend('Analytical', 'Reconstructed (Re + i*Im)', '10% criteria', 'FFT check', 'T1=1us');
+    if T1 == 1
+        plot(w, abs(Ks), 'LineWidth', 1.5, 'LineStyle', '--'); hold on;
+    end
+    legend('Analytical', 'Reconstructed (Re + i*Im)', '10% criteria', 'FFT check', 'T1=1us', 'Matched filter');
     
     subplot(2,1,2);
     plot(w, angle(U), 'LineWidth', 1.5); hold on;
@@ -65,8 +72,11 @@ function U = spectre(T1, w)
     xlabel('\omega (rad/us)'); ylabel('Arg[U(\omega)]');
     stem(freqs(idx_plot), angle(X_fft(idx_plot)), 'Marker', 'none', 'Color', '#aaa');
     grid on;
-    legend('Analytical', 'Reconstructed (Re + i*Im)', 'FFT check');
     plot(w, angle(U1), 'LineWidth', 1.5, 'LineStyle', ':'); hold on;
+    if T1 == 1
+        plot(w, angle(Ks), 'LineWidth', 1.5, 'LineStyle', '--'); hold on;
+    end
+    legend('Analytical', 'Reconstructed (Re + i*Im)', 'FFT check', 'T1=1us', 'Matched filter');
 end
 
 w = linspace(-8, 8, 10000);
